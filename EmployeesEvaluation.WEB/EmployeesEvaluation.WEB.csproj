@@ -71,5 +71,9 @@
     <Folder Include="Controllers\Api\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="wwwroot\WebComponents\question-form.html" />
+  </ItemGroup>
 
 </Project>

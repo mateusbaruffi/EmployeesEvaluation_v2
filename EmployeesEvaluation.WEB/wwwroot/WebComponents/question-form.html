@@ -88,7 +88,7 @@
     var likertType = 1;
     var openEndedType = 2;
 
-    tmpArr = [{ Description: 'hey1' }, { Description: 'hey2' }, { Description: 'hey3' }, { Description: 'hey4' }];
+    
 
     Polymer({
         is: 'question-form',
@@ -120,7 +120,7 @@
         },
         ready: function () {
             console.log("I'm ready");
-            this.likertAnswers = tmpArr;
+           
         },
         _selected: function (selected, previous) {
             console.log("------- selectedQuestionType: " + selected);

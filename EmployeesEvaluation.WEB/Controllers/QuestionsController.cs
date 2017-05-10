@@ -33,6 +33,11 @@ namespace EmployeesEvaluation.WEB.Controllers
             return View();
         }
 
+        public IActionResult NewPolymer()
+        {
+            return View();
+        }
+
         public IActionResult New()
         {
             QuestionDto questionDto = new QuestionDto();

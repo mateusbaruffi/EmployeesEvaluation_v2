@@ -54,5 +54,26 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
 
             return Json(new { Data = questionDto });
         }
+
+        [HttpGet("GetQuestionTypes")]
+        //[AllowAnonymous]
+        public JsonResult GetQuestionTypes()
+        {
+            var questionTypes = new List<object>();
+
+            foreach (var item in Enum.GetValues(typeof(QuestionType)))
+            {
+
+                questionTypes.Add(new
+                {
+                    Id = (int)item,
+                    Name = item.ToString()
+                });
+            }
+            return Json(questionTypes);
+        }
+
+
+
     }
 }

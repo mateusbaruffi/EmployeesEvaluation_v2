@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EmployeesEvaluation.WEB.Controllers
 {
-    [Authorize(Roles = "EMP" )]
+    [Authorize(Roles = "HRM, EMP" )]
     public class HomeController : Controller
     {
         public IActionResult Index()

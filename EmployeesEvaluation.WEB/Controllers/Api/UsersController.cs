@@ -80,5 +80,13 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
 
             return Json(new { Data = userDto });
         }
+
+        [HttpGet("GetHrDmManagers")]
+        [AllowAnonymous]
+        public JsonResult GetHrDmManagers()
+        {
+            var ownerships = _userService.FindBy(u => u.UserType == UserType.HRM || u.UserType == UserType.DM).Select(Mapper.Map<ApplicationUser, UserDto>);
+            return Json(ownerships);
+        }
     }
 }
