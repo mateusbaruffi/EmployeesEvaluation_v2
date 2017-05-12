@@ -11,6 +11,13 @@
   <PropertyGroup>
     <UserSecretsId>aspnet-EmployeesEvaluation.WEB-a5730dd2-6ba8-4870-806e-10de91008424</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="wwwroot\WebComponents\question-card.html" />
+    <Content Include="wwwroot\WebComponents\question-form - Cópia.html">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MailKit" Version="1.16.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
