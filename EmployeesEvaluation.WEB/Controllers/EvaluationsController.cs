@@ -44,6 +44,11 @@ namespace EmployeesEvaluation.WEB.Controllers
             return View();
         }
 
+        public IActionResult NewPolymer()
+        {
+            return View();
+        }
+
         [Authorize(Roles = "HRM, DM")]
         public IActionResult New()
         {

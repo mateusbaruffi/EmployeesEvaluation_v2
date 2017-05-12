@@ -30,6 +30,13 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
             this._logger = logger;
         }
 
+        [HttpGet("GetAll")]
+        public JsonResult GetAll()
+        {
+            var result = _seasonService.All().Select(Mapper.Map<Season, SeasonDto>);
+            return Json(result);
+        }
+
         [HttpPost("List")]
         public JsonResult List([DataSourceRequest]DataSourceRequest request)
         {

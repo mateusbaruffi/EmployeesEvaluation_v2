@@ -74,5 +74,20 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
             var dsResult = result.ToDataSourceResult(request);
             return Json(dsResult);
         }
+
+        [HttpPost("Create")]
+        [AllowAnonymous]
+        public IActionResult Create([FromBody]EvaluationDto evaluationDto)
+        {
+            if(!ModelState.IsValid)
+                return BadRequest();
+
+            var evaluation = Mapper.Map<EvaluationDto, Evaluation>(evaluationDto);
+            
+            _evaluationService.Create(evaluation);
+            evaluationDto.Id = evaluation.Id;
+
+            return new ObjectResult(evaluationDto);
+        }
     }
 }

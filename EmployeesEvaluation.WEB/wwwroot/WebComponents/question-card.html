@@ -53,7 +53,9 @@
  
         
         <div class="card">
- 
+            <paper-input name="Description" label="Description" bind-value="{{formData.Description}}" required></paper-input>
+           
+
                 <paper-dropdown-menu label="Select Question Type" required>
                     <paper-listbox class="dropdown-content" selected="{{selectedQuestionType}}" attr-for-selected="value">
                         <template is="dom-repeat" items="[[questionTypes]]" as="questionType">
@@ -71,21 +73,20 @@
                     </paper-listbox>
                 </paper-dropdown-menu>
                 <input type="hidden" name="OwnershipId" value="{{formData.OwnershipId}}" />
-                <br />
-                <paper-input name="Description" label="Description" bind-value="{{formData.Description}}" required></paper-input>
-
                 <paper-input class="input" name="Limit" label="Limit" bind-value="{{formData.Limit}}" hidden$="[[hideLimitField]]"></paper-input>
                 <br />
 
+           
                 <div id="answers_container" hidden$="[[hideAnswersContainer]]">
 
                     <template is="dom-repeat" items="[[likertAnswers]]" as="likertAnswer">
-                        <paper-input class="likertAnswers" name="LikertAnswers[{{index}}].Description" label="Option {{displayIndex(index)}}" bind-value="{{likertAnswer.Description}}" ></paper-input>
+                        <paper-input class="likertAnswers" name="LikertAnswers[{{index}}].Description" label="Option {{displayIndex(index)}}" bind-value="{{likertAnswer.Description}}"></paper-input>
                     </template>
 
                     <paper-icon-button on-tap="addAnswer" icon="add-circle" title="Add New Option"></paper-icon-button>
 
                 </div>
+          
 
 
                
@@ -139,6 +140,7 @@
             this.validateLikertAnswers(true);
         },
         ready: function () {
+            this.splice("likertAnswers", 0, this.likertAnswers.length)
             console.log("I'm ready");
             //this.likertAnswers = tmpArr;
         },
@@ -161,9 +163,12 @@
             this.formData.QuestionTypeId = selected;
             // show/hide likertAnswers
             if (selected == likertType) {
+                this.addAnswer();
                 this.validateLikertAnswers(true);
                 this.hideAnswersContainer = false;
             } else {
+                // clear likertAnswers
+                this.splice("likertAnswers", 0, this.likertAnswers.length)
                 this.validateLikertAnswers(false);
                 this.hideAnswersContainer = true;
             }
