@@ -6,20 +6,18 @@
 <link rel="import" href="/lib/paper-button/paper-button.html" />
 <link rel="import" href="/lib/iron-ajax/iron-ajax.html" />
 <link rel="import" href="/lib/iron-input/iron-input.html" />
-
+<link rel="import" href="/lib/iron-form/iron-form.html" />
 
 
 <dom-module id="question-form">
     <template>
-        
 
-        <iron-ajax 
-            id="getQuestionTypesAjax"
-            auto
-            method="get" 
-            url="http://localhost:63585/Api/Questions/GetQuestionTypes"
-            handle-as="json"
-            last-response="{{questionTypes}}"></iron-ajax>
+        <iron-ajax id="getQuestionTypesAjax"
+                   auto
+                   method="get"
+                   url="http://localhost:63585/Api/Questions/GetQuestionTypes"
+                   handle-as="json"
+                   last-response="{{questionTypes}}"></iron-ajax>
 
         <iron-ajax id="getOwnershipsAjax"
                    auto
@@ -27,68 +25,55 @@
                    url="http://localhost:63585/Api/Users/GetHrDmManagers"
                    handle-as="json"
                    last-response="{{ownerships}}"></iron-ajax>
-
-        <iron-ajax id="saveQuestion"
-                   method="post"
-                   content-type="application/json"
-                   handle-as="text"
-                   on-response="handleQuestionResponse"
-                   on-error="handleQuestionError"></iron-ajax>
         
-        <div id="form-container">
+        <form is="iron-form" method="post" action="/Api/Questions/Save" id="questionForm">
 
-            <paper-dropdown-menu label="Select Question Type">
+            <paper-dropdown-menu label="Select Question Type" required>
                 <paper-listbox class="dropdown-content" selected="{{selectedQuestionType}}" attr-for-selected="value">
                     <template is="dom-repeat" items="[[questionTypes]]" as="questionType">
                         <paper-item value="[[questionType.Id]]">[[questionType.Name]]</paper-item>
                     </template>
                 </paper-listbox>
             </paper-dropdown-menu>
-
-            <paper-dropdown-menu label="Select Ownership">
+            <br />
+            <paper-dropdown-menu label="Select Ownership" required>
                 <paper-listbox class="dropdown-content" selected="{{formData.OwnershipId}}" attr-for-selected="value">
                     <template is="dom-repeat" items="[[ownerships]]" as="ownership">
                         <paper-item value="[[ownership.Id]]">[[ownership.Email]]</paper-item>
                     </template>
                 </paper-listbox>
             </paper-dropdown-menu>
+            <br />
+            <paper-input name="Description" label="Description" bind-value="{{formData.Description}}" required></paper-input>
 
-            <paper-input-container>
-                <label>Description</label>
-                <input is="iron-input" id="QuestionDescription" type="text" bind-value="{{formData.Description}}" />
-            </paper-input-container>
-
+            <br />
             <div id="answers_container">
 
-                
                 <template is="dom-repeat" items="[[likertAnswers]]" as="likertAnswer">
-                    <div class="form-group">
-                        <label class="col-md-2 control-label">Answer  {{displayIndex(index)}}</label>
-                        <div class="col-md-10">
-                            <input is="iron-input" bind-value="{{likertAnswer.Description}}" class="form-control" />
-                        </div>
-                    </div>
+             
+                    <paper-input name="Description" label="Option {{displayIndex(index)}}" bind-value="{{likertAnswer.Description}}" required></paper-input>
+            
                 </template>
+                <br />
+                <paper-button raised on-tap="addAnswer">Add Answer</paper-button>
             </div>
 
-            <paper-button on-tap="addAnswer">Add Answer</paper-button>
-            <paper-button on-tap="removeAnswer">Remove Answer</paper-button>
-            <paper-button on-tap="submitForm">Save</paper-button>
 
-        </div>
-        
-        
-        
-        
-        
-    </template>
+            <br /><br /><br />
+            <paper-button raised on-tap="_submit">Submit</paper-button>
+            <paper-button raised on-tap="_reset(event)">Reset</paper-button>
+            <div class="output"></div>
+        </form>
+
+
+</template>
 </dom-module>
 <script>
 
     var likertType = 1;
     var openEndedType = 2;
 
-    
+    tmpArr = [{ Description: 'hey1' }, { Description: 'hey2' }, { Description: 'hey3' }, { Description: 'hey4' }];
 
     Polymer({
         is: 'question-form',
@@ -99,7 +84,7 @@
             },
             likertAnswers: {
                 type: Array,
-                value: function () { return [ {  }] },
+                value: function () { return [{}] },
                 notify: true
             },
             selectedQuestionType: {
@@ -115,12 +100,22 @@
                 type: Boolean,
                 value: false
             }
-         
-           
         },
         ready: function () {
             console.log("I'm ready");
-           
+            //this.likertAnswers = tmpArr;
+        },
+        addAnswer: function () {
+            this.push('likertAnswers', { Description: '' });
+        },
+        removeAnswer: function (likert) {
+
+            var index = this.likertAnswers.indexOf(likert);
+            this.splice('likertAnswers', index, 1);
+
+        },
+        displayIndex: function (index) {
+            return index + 1;
         },
         _selected: function (selected, previous) {
             console.log("------- selectedQuestionType: " + selected);
@@ -132,27 +127,21 @@
             // show/hide limitField
             this.showHideLimitBox = (selected == openEndedType) ? true : false;
         },
-        submitForm: function () {
-            this.$.saveQuestion.url = "http://localhost:63585/Api/Questions/Save";
+        _submit: function (event) {
 
-            this.formData.LikertAnswers = this.likertAnswers;
+            //console.log('submit form');
 
-            console.log(this.formData);
             console.log(this.likertAnswers);
-            //this.$.saveQuestion.generateRequest();
-        },
-        addAnswer: function () {
-            this.push('likertAnswers', {Description: '' });
-        },
-        removeAnswer: function (likert) {
-           
-            var index = this.likertAnswers.indexOf(likert);
-            this.splice('likertAnswers', index, 1);
-          
-        },
-        displayIndex: function (index) {
-            return index + 1;
+
+            this.$.questionForm.submit();
+            //Polymer.dom(event).localTarget.parentElement.submit();
         }
-        
     });
+
+
+
+
+
+
+
 </script>

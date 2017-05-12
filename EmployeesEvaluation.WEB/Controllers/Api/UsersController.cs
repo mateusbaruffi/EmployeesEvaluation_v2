@@ -49,8 +49,6 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
         public IActionResult ListDepartmentManagers([DataSourceRequest]DataSourceRequest request, string text)
         {
             var result = _userService.FindBy(u => u.UserType == UserType.DM);
-            //var result = _questionService.All().Select(Mapper.Map<Question, QuestionDto>);
-            //var dsResult = result.ToDataSourceResult(request);
             return Json(result.ToList());
         }
 
