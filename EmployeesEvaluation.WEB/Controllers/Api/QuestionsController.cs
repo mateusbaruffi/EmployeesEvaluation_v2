@@ -40,9 +40,21 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
         public IActionResult FindBy([DataSourceRequest]DataSourceRequest request, string text)
         {
            var result = _questionService.FindBy(q => q.Description.Contains(text)).Select(Mapper.Map<Question, QuestionDto>);
-            //var result = _questionService.All().Select(Mapper.Map<Question, QuestionDto>);
-            //var dsResult = result.ToDataSourceResult(request);
             return Json(result.ToList());
+        }
+
+        [HttpPost("Create")]
+        [AllowAnonymous]
+        public IActionResult Create([FromBody]QuestionDto questionDto)
+        {
+            var question = Mapper.Map<QuestionDto, Question>(questionDto);
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            _questionService.Create(question);
+
+            return Json(questionDto);
         }
 
         [HttpPost("Delete")]
@@ -56,7 +68,6 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
         }
 
         [HttpGet("GetQuestionTypes")]
-        //[AllowAnonymous]
         public JsonResult GetQuestionTypes()
         {
             var questionTypes = new List<object>();
