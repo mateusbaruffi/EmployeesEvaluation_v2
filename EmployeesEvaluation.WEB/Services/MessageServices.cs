@@ -43,15 +43,15 @@ namespace EmployeesEvaluation.WEB.Services
                 //Smtp Port Number 
                 int SmtpPortNumber = 587;
 
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = message;
+                bodyBuilder.TextBody = message;
+
                 var mimeMessage = new MimeMessage();
                 mimeMessage.From.Add(new MailboxAddress("CHI Emloyees Evaluation", "chiemployess@gmail.com"));
                 mimeMessage.To.Add(new MailboxAddress(email, email));
                 mimeMessage.Subject = subject;
-                mimeMessage.Body = new TextPart("plain")
-                {
-                    Text = message
-
-                };
+                mimeMessage.Body = bodyBuilder.ToMessageBody();
 
                 using (var client = new SmtpClient())
                 {
