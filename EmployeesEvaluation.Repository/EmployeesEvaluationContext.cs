@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using EmployeesEvaluation.Core.Models;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
+using System.Threading;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace EmployeesEvaluation.Repository
 {
@@ -22,7 +26,12 @@ namespace EmployeesEvaluation.Repository
         public DbSet<Season> Season { get; set; }
         public DbSet<UserRelation> UserRelation { get; set; }
 
-        public EmployeesEvaluationContext (DbContextOptions<EmployeesEvaluationContext> options) : base(options) { }
+        private IHttpContextAccessor _httpContextAccessor;
+        private HttpContext _httpContext { get { return _httpContextAccessor.HttpContext; } }
+
+        public EmployeesEvaluationContext (IHttpContextAccessor contextAccessor, DbContextOptions<EmployeesEvaluationContext> options) : base(options) {
+            _httpContextAccessor = contextAccessor;
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -148,8 +157,55 @@ namespace EmployeesEvaluation.Repository
                 .HasForeignKey(ea => ea.EmployeeId);
 
 
-        }        
-        
+        }
+
+        public override int SaveChanges()
+        {
+            SetAuditingData();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            SetAuditingData();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetAuditingData()
+        {
+            var entities = ChangeTracker.Entries().Where(x => x.Entity is EntityBase && (x.State == EntityState.Added || x.State == EntityState.Modified));
+
+            if (_httpContext != null)
+            {
+                if (_httpContext.User != null)
+                {
+                    var claimsIdentity = (ClaimsIdentity)_httpContext.User.Identity;
+                    var claim = claimsIdentity.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                    var userId = claim.Value;
+
+
+                    var currentUsername = !string.IsNullOrEmpty(userId)
+                        ? userId
+                        : "Anonymous";
+
+                    foreach (var entity in entities)
+                    {
+                        if (entity.State == EntityState.Added)
+                        {
+                            ((EntityBase)entity.Entity).CreatedAt = DateTime.UtcNow;
+                            ((EntityBase)entity.Entity).CreatedBy = currentUsername;
+                        }
+
+                        ((EntityBase)entity.Entity).UpdatedAt = DateTime.UtcNow;
+                        ((EntityBase)entity.Entity).UpdatedBy = currentUsername;
+                    }
+                }
+               
+
+            }
+           
+        }
+
 
     }
 }

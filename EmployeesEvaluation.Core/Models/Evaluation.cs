@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace EmployeesEvaluation.Core.Models
 {
-    public class Evaluation : IEntityBase
+    public class Evaluation : EntityBase
     {
-        public int Id { get; set; }
         public string Title { get; set; }
         public string Introduction { get; set; }           
         public string Disclosure { get; set; }

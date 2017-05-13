@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace EmployeesEvaluation.Core.Models
 {
-    public class EvaluationAssigned : IEntityBase
+    public class EvaluationAssigned : EntityBase
     {
-        public int Id { get; set; }
-
         public string DepartmentManagerId { get; set; }
 
         public Evaluation Evaluation { get; set; }
