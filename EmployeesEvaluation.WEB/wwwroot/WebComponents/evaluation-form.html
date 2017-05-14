@@ -15,7 +15,8 @@
 <link rel="import" href="/lib/iron-form/iron-form.html" />
 <link rel="import" href="/lib/paper-toolbar/paper-toolbar.html" />
 <link rel="import" href="/lib/paper-autocomplete/paper-autocomplete.html" />
-<link rel="import" href="question-card.html" />
+<link rel="import" href="question-card-form.html" />
+<link rel="import" href="question-card-viewer.html" />
 
 <dom-module id="evaluation-form">
     <template>
@@ -27,6 +28,17 @@
                 width: 30%;
             }
         </style>
+
+        <iron-ajax id="findQuestionsByDescription"
+                   method="get"
+                   handle-as="json"
+                   on-response="handleFindQuestionsResponse"></iron-ajax>
+        
+        <iron-ajax id="getSingleQuestion"
+                   method="get"
+                   handle-as="json"
+                   on-response="handleSingleQuestionResponse"></iron-ajax>
+
         <iron-ajax id="getDepartmentManagersAjax"
                    auto
                    method="get"
@@ -52,31 +64,39 @@
             <form is="iron-form" method="post" action="/Api/Evaluations/Create" id="evaluationsForm" headers = '{"content-type":"application/json"}'>
 
                 <paper-dropdown-menu label="Select a Department Manager" required>
-                    <paper-listbox class="dropdown-content" selected="{{evaluationData.DepartmentManagerId}}" attr-for-selected="value">
+                    <paper-listbox class="dropdown-content" selected="{{evaluationForm.DepartmentManagerId}}" attr-for-selected="value">
                         <template is="dom-repeat" items="[[departmentManagers]]" as="departmentManager">
                             <paper-item value="[[departmentManager.Id]]">[[departmentManager.Email]]</paper-item>
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <input type="hidden" name="DepartmentManagerId" value="{{evaluationData.DepartmentManagerId}}" />
+                
                 <br />
                 <paper-dropdown-menu label="Select a Season" required>
-                    <paper-listbox class="dropdown-content" selected="{{evaluationData.SeasonId}}" attr-for-selected="value">
+                    <paper-listbox class="dropdown-content" selected="{{evaluationForm.SeasonId}}" attr-for-selected="value">
                         <template is="dom-repeat" items="[[seasons]]" as="season">
                             <paper-item value="[[season.Id]]">[[season.Name]]</paper-item>
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <input type="hidden" name="SeasonId" value="{{evaluationData.SeasonId}}" />
+                
                 <br />
 
-                <paper-input name="Title" label="Title" bind-value="{{evalutionData.Title}}" required></paper-input>
+                <paper-input name="Title" label="Title" value="{{evaluationForm.Title}}" required></paper-input>
                 <br />
-                <paper-textarea label="Introduction" bind-value="{{evaluationData.Introduction}}" required></paper-textarea>
+                <paper-textarea label="Introduction" value="{{evaluationForm.Introduction}}" required></paper-textarea>
                 <br />
                 
-                <template is="dom-repeat" items="[[questions]]" as="question">
-                    <question-card form-data="{{question.formData}}" likert-answers="{{question.likertAnswers}}"></question-card>
+                <template is="dom-repeat" items="[[evaluationForm.Questions]]" as="question">
+
+                    <template is="dom-if" if="[[!question.Id]]">
+                        <question-card-form question-form="{{question}}"></question-card-form>
+                    </template>
+
+                    <template is="dom-if" if="[[question.Id]]">
+                        <question-card-viewer question-form="{{question}}"></question-card-viewer>
+                    </template>
+                    
                     <hr />
                    
                 </template>
@@ -84,8 +104,11 @@
                 <paper-toolbar>
                     <paper-icon-button on-tap="addQuestion" icon="add-circle" title="Add New Option"></paper-icon-button>
                     <paper-icon-button on-tap="removeQuestion" icon="remove-circle" title="Delete last Option"></paper-icon-button>
-                    
+                   
                 </paper-toolbar>
+                <autocomplete-example>
+                    <paper-autocomplete  text-property="Description" value-property="Id" bind-value="{{searchText}}" remote-source="true" min-length="2" placeholder="With a placeholder" label="State" id="paperAutocomplete" always-float-lable="true"></paper-autocomplete>
+                </autocomplete-example>
                 <br /><br /><br />
                 <paper-button raised on-tap="_submit">Submit</paper-button>
                 
@@ -97,58 +120,67 @@
 </dom-module>
 <script>
 
+
     Polymer({
         is: 'evaluation-form',
         properties: {
-            evaluationData: {
+            evaluationForm: {
                 type: Object,
-                value: {}
+                value: function () { return {} }
             },
-            formData: {
-                type: Object,
-                value: {}
-            },
-            likertAnswers: {
-                type: Array,
-                value: function () { return [{}] }
-            },
-            questions: {
-                type: Array,
-                value: function () { return [{ formData: {}, likertAnswers: [{}] }] }
+            searchText: {
+                type: String,
+                observer: '_searchChanged'
+            }
+        },  
+        handleFindQuestionsResponse: function (event) {
+            var search = this.searchText;
+            var data = event.detail.response;
+           
+            // display autocomplete suggestions
+            this.$.paperAutocomplete.suggestions(data.filter(function (obj) {
+                return obj.Description.toLowerCase().indexOf(search) !== -1;
+            }));
+        },
+        _searchChanged: function () {
+            // This observer fire a request to search for existing questions
+            // generate the request if the number of characters in the input is greater than the min-length attr 
+            if (this.searchText.length > this.$.paperAutocomplete.minLength) {
+                console.log('send request');
+                var findQuestionsAjax = this.$.findQuestionsByDescription;
+                findQuestionsAjax.url = "http://localhost:63585/Api/Questions/FindBy/?text=" + this.searchText;
+                findQuestionsAjax.generateRequest();
             }
         },
+        onSelect: function (event) {  
+            // get the question data
+            var getQuestionAjax = this.$.getSingleQuestion;
+            getQuestionAjax.url = "http://localhost:63585/Api/Questions/GetSingle/?id=" + event.detail.value;
+            getQuestionAjax.generateRequest();
+        },
+        handleSingleQuestionResponse: function (event) {
+            this.push('evaluationForm.Questions', event.detail.response);
+        },
+        ready: function () {
+            if (this.evaluationForm.Questions == undefined)
+                this.set('evaluationForm.Questions', [{ }])
+
+            this.listen(this.$.paperAutocomplete, 'autocomplete-selected', 'onSelect');
+        },
         addQuestion: function () {
-            this.push('questions', { formData: {}, likertAnswers: [{}] });
+            this.push('evaluationForm.Questions', { });
         },
         _submit: function (event) {
 
-            // need refactore in child element to avoid this loop
-            for (var i = 0; i < this.questions.length; i++) {
-                console.log(this.questions[i].formData);
-                if (this.questions[i].likertAnswers != undefined)
-                    this.questions[i].formData.LikertAnswers = this.questions[i].likertAnswers;
-            }
-
-            for (var i = 0; i < this.questions.length; i++) {
-                this.questions[i] = this.questions[i].formData;
-            }
-
-            this.evaluationData.Questions = this.questions;
-
-            console.log(this.evaluationData);
-            //console.log(this.questions);
-
-            this.formData.LikertAnswers = this.likertAnswers;
             this.$.saveEvaluation.url = "http://localhost:63585/Api/Evaluations/Create";
-            this.$.saveEvaluation.body = this.evaluationData;
-
+            this.$.saveEvaluation.body = this.evaluationForm;
+        
             if (Polymer.dom(event).localTarget.parentElement.validate()) {
                 this.$.saveEvaluation.generateRequest();
                 console.log("------ validated and request sent ---");
             } else
                 console.log("---- no validated" );
-            
-            //this.$.questionForm.submit();
+
         },
         handleSubmitResponse: function (event) {
             console.log(event.detail.response);

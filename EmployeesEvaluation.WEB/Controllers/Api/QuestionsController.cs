@@ -28,6 +28,13 @@ namespace EmployeesEvaluation.WEB.Controllers.Api
             this._logger = logger;
         }
 
+        [HttpGet("GetSingle")]
+        public IActionResult GetSigle(int id)
+        {
+            var question = _questionService.GetSingleIncluding(q => q.Id == id, q => q.LikertAnswers);
+            return Json(Mapper.Map<Question, QuestionDto>(question));
+        }
+
         [HttpPost("List")]
         public JsonResult List([DataSourceRequest]DataSourceRequest request)
         {

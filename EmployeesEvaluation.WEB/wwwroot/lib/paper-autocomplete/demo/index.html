@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 
 <head>
@@ -208,14 +208,16 @@
         document.querySelector('#input-remote').addEventListener('autocomplete-selected', onSelect);
         document.querySelector('#input-remote').addEventListener('autocomplete-change', onChange);
 
-        function onSelect(event) {
-          var paperToast = document.querySelector('paper-toast');
+          function onSelect(event) {
+              console.log('onselect event');
+          /*var paperToast = document.querySelector('paper-toast');
           var selected = event.detail.text;
           paperToast.text = 'Selected: ' + selected;
-          paperToast.show();
+          paperToast.show();*/
         }
 
-        function onChange(event) {
+          function onChange(event) {
+              console.log("onchange listerner");
           var input = document.querySelector('#input-remote');
           var search = event.detail.option.text;
           var delay = Math.random() * (500 - 100) + 100;
