@@ -14,7 +14,7 @@
 <link rel="import" href="/lib/iron-form/iron-form.html" />
 
 
-<dom-module id="question-card-form">
+<dom-module id="question-card-viewer">
     <template>
         <style>
             .card {
@@ -52,9 +52,9 @@
                    last-response="{{ownerships}}"></iron-ajax>
 
         <div class="card">
-            <paper-input name="Description" label="Description" value="{{questionForm.Description}}" required></paper-input>
+            <paper-input disabled name="Description" label="Description" value="{{questionForm.Description}}" required></paper-input>
            
-            <paper-dropdown-menu label="Select Question Type" required>
+            <paper-dropdown-menu disabled label="Select Question Type" required>
                 <paper-listbox class="dropdown-content" selected="{{questionForm.QuestionType}}" attr-for-selected="value">
                     <template is="dom-repeat" items="[[questionTypes]]" as="questionType">
                         <paper-item value="[[questionType.Id]]">[[questionType.Name]]</paper-item>
@@ -63,7 +63,7 @@
             </paper-dropdown-menu>
                 
             <br />
-            <paper-dropdown-menu label="Select Ownership" required>
+            <paper-dropdown-menu disabled label="Select Ownership" required>
                 <paper-listbox class="dropdown-content" selected="{{questionForm.OwnershipId}}" attr-for-selected="value">
                     <template is="dom-repeat" items="[[ownerships]]" as="ownership">
                         <paper-item value="[[ownership.Id]]">[[ownership.Email]]</paper-item>
@@ -71,17 +71,19 @@
                 </paper-listbox>
             </paper-dropdown-menu>
                 
-            <paper-input class="input" name="Limit" label="Limit" bind-value="{{questionForm.Limit}}" hidden$="[[hideLimitField]]"></paper-input>
+            <paper-input disabled class="input" name="Limit" label="Limit" bind-value="{{questionForm.Limit}}" hidden$="[[hideLimitField]]"></paper-input>
             <br />
 
             <div id="answers_container" hidden$="[[hideAnswersContainer]]">
                 <template is="dom-repeat" items="[[questionForm.LikertAnswers]]" as="likertAnswer">
-                    <paper-input class="likertAnswers" name="LikertAnswers[{{index}}].Description" label="Option {{displayIndex(index)}}" value="{{likertAnswer.Description}}" required></paper-input>
+                    <paper-input disabled class="likertAnswers" name="LikertAnswers[{{index}}].Description" label="Option {{displayIndex(index)}}" value="{{likertAnswer.Description}}" required></paper-input>
                 </template>
 
-                <paper-icon-button on-tap="addAnswer" icon="add-circle" title="Add New Option"></paper-icon-button>
+               
             </div>
         </div>
+
+        <input type="hidden" name="Id" value="{{questionForm.Id}}" />
 
 </template>
 </dom-module>
@@ -91,7 +93,7 @@
     var openEndedType = 2;
 
     Polymer({
-        is: 'question-card-form',
+        is: 'question-card-viewer',
         properties: {
             questionForm: {
                 type: Object,
@@ -115,10 +117,6 @@
                 this.set('questionForm.LikertAnswers', [{ Description: '' }])
             else
                 this.push('questionForm.LikertAnswers', { Description: '' });
-        },
-        removeAnswer: function (likert) {
-            var index = this.questionForm.LikertAnswers.indexOf(likert);
-            this.splice("questionForm.LikertAnswers", index, 1)
         },
         displayIndex: function (index) {
             return index + 1;

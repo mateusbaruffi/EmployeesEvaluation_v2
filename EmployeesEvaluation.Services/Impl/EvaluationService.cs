@@ -96,7 +96,8 @@ namespace EmployeesEvaluation.Services.Impl
             
             foreach (var question in evaluation.Questions) 
             {
-                _questionRepository.Add(question);
+                if (question.Id == 0)
+                    _questionRepository.Add(question);
 
                 EvaluationQuestion eq = new EvaluationQuestion()
                 {

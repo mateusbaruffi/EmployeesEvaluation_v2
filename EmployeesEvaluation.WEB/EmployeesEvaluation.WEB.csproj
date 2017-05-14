@@ -14,10 +14,9 @@
 
   <ItemGroup>
     <Content Include="wwwroot\WebComponents\evaluation-form.html" />
+    <Content Include="wwwroot\WebComponents\question-card-viewer.html" />
+    <Content Include="wwwroot\WebComponents\question-card-form.html" />
     <Content Include="wwwroot\WebComponents\question-card.html" />
-    <Content Include="wwwroot\WebComponents\question-form - Cópia.html">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MailKit" Version="1.16.1" />

@@ -21,6 +21,8 @@ using Newtonsoft.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace EmployeesEvaluation.WEB
 {
@@ -89,6 +91,11 @@ namespace EmployeesEvaluation.WEB
             services.AddScoped<IEvaluationQuestionRepository, EvaluationQuestionRepository>();
             services.AddScoped<IEvaluationAssignedRepository, EvaluationAssignedRepository>();
             services.AddScoped<ILikertAnswerRepository, LikertAnswerRepository>();
+
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddTransient<ClaimsPrincipal>(
+                s => s.GetService<IHttpContextAccessor>().HttpContext.User);
 
             services.Configure<AuthMessageSenderOptions>(Configuration);
         }
