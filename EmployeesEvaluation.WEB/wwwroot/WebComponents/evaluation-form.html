@@ -21,11 +21,29 @@
 <dom-module id="evaluation-form">
     <template>
         <style>
+
+
             paper-toolbar {
                 background-color: #4a4646;
-                margin-top: 10px;
+                margin: 2px 0px 20px 0px;
                 border-radius: 5px;
-                width: 30%;
+               
+            }
+
+            paper-toolbar paper-icon-button {
+                margin-right: 20px;
+            }
+            paper-input-container {
+                color: azure;
+               
+            }
+
+            paper-autocomplete {
+                width: 100%;
+                color: #000000;
+                --paper-input-container-color: #868585;
+                --paper-input-container-focus-color: #f1f1f1;
+                --paper-input-container-input-color: #f1f1f1;
             }
         </style>
 
@@ -86,6 +104,16 @@
                 <br />
                 <paper-textarea label="Introduction" value="{{evaluationForm.Introduction}}" required></paper-textarea>
                 <br />
+                New Question Or Use an Existing One
+                <paper-toolbar>
+                
+                    <paper-icon-button on-tap="addQuestion"  icon="add-circle" title="Add New Question"></paper-icon-button>
+                    
+                   
+                    <paper-autocomplete text-property="Description" value-property="Id" bind-value="{{searchText}}" remote-source="true" min-length="2" placeholder="Enter a question description" label="Use existing Question" id="paperAutocomplete" always-float-lable="true"></paper-autocomplete>
+                    
+                </paper-toolbar>
+               
                 
                 <template is="dom-repeat" items="[[evaluationForm.Questions]]" as="question">
 
@@ -101,14 +129,6 @@
                    
                 </template>
 
-                <paper-toolbar>
-                    <paper-icon-button on-tap="addQuestion" icon="add-circle" title="Add New Option"></paper-icon-button>
-                    <paper-icon-button on-tap="removeQuestion" icon="remove-circle" title="Delete last Option"></paper-icon-button>
-                   
-                </paper-toolbar>
-                <autocomplete-example>
-                    <paper-autocomplete  text-property="Description" value-property="Id" bind-value="{{searchText}}" remote-source="true" min-length="2" placeholder="Enter a question description" label="Use existing Question" id="paperAutocomplete" always-float-lable="true"></paper-autocomplete>
-                </autocomplete-example>
                 <br /><br /><br />
                 <paper-button raised on-tap="_submit">Submit</paper-button>
                 
@@ -159,31 +179,41 @@
             getQuestionAjax.generateRequest();
         },
         handleSingleQuestionResponse: function (event) {
-            this.push('evaluationForm.Questions', event.detail.response);
+            if (this.evaluationForm.Questions == undefined)
+                this.set('evaluationForm.Questions', [event.detail.response])
+            else
+                this.push('evaluationForm.Questions', event.detail.response);
         },
         ready: function () {
-            if (this.evaluationForm.Questions == undefined)
-                this.set('evaluationForm.Questions', [{ }])
-
             this.listen(this.$.paperAutocomplete, 'autocomplete-selected', 'onSelect');
         },
         addQuestion: function () {
-            this.push('evaluationForm.Questions', { });
+            if (this.evaluationForm.Questions == undefined)
+                this.set('evaluationForm.Questions', [{}])
+            else
+                this.push('evaluationForm.Questions', { });
         },
         _submit: function (event) {
 
-            this.$.saveEvaluation.url = "http://localhost:63585/Api/Evaluations/Create";
-            this.$.saveEvaluation.body = this.evaluationForm;
-        
-            if (Polymer.dom(event).localTarget.parentElement.validate()) {
-                this.$.saveEvaluation.generateRequest();
-                console.log("------ validated and request sent ---");
-            } else
-                console.log("---- no validated" );
+            if (this.evaluationForm.Questions == undefined)
+                alert("You need create or select at least one question!");
+            else {
+                this.$.saveEvaluation.url = "http://localhost:63585/Api/Evaluations/Create";
+                this.$.saveEvaluation.body = this.evaluationForm;
+
+                if (Polymer.dom(event).localTarget.parentElement.validate()) {
+                    this.$.saveEvaluation.generateRequest();
+                    console.log("------ validated and request sent ---");
+                } else
+                    console.log("---- no validated");
+            }
+
+
 
         },
         handleSubmitResponse: function (event) {
             console.log(event.detail.response);
+            window.location.href = "/Evaluations/Index"
         }, 
         handleSubmitError: function (event) {
             console.log(event.detail);
